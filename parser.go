@@ -8,10 +8,10 @@ import (
 )
 
 type Event struct {
-	Type string
-  Branch string
-  Container string
-	Project string
+	Type      string
+	Branch    string
+	Container string
+	Project   string
 }
 
 type BranchMapping map[string][]string
