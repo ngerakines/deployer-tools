@@ -16,9 +16,9 @@ type Event struct {
 
 type BranchMapping map[string][]string
 
-type ProjectMapping map[string]*BranchMapping
+type ProjectMapping map[string]BranchMapping
 
-type Mapping map[string]*ProjectMapping
+type Mapping map[string]ProjectMapping
 
 func ReadEvent(file string) (*Event, error) {
 	data := readFromFile(file)
@@ -32,14 +32,14 @@ func ReadEvent(file string) (*Event, error) {
 	return &event, nil
 }
 
-func ReadMapping(file string) (*Mapping, error) {
+func ReadMapping(file string) (Mapping, error) {
 	data := readFromFile(file)
 	var mapping Mapping
 	err := json.Unmarshal(data, &mapping)
 	if err != nil {
 		return nil, err
 	}
-	return &mapping, nil
+	return mapping, nil
 }
 
 func readFromFile(file string) []byte {
