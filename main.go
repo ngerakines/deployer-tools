@@ -67,7 +67,12 @@ func realMain(args []string) int {
 		return 1
 	}
 
-	command := GetCommand(event.Type, dry, mapping, event, hostTemplate)
+	command := NewCommand(
+		WithMapping(mapping),
+		WithDry(dry),
+		WithEvent(event),
+		WithHostTemplate(hostTemplate),
+	)
 	if command == nil {
 		return 1
 	}
@@ -79,21 +84,6 @@ func realMain(args []string) int {
 	}
 
 	return 0
-}
-
-func GetCommand(eventType string, dry bool, mapping Mapping, event *Event, hostTemplate string) Command {
-	switch event.Type {
-	case "service.update":
-		return &UpdateServiceCommand{
-			Dry:          dry,
-			Mapping:      mapping,
-			Event:        event,
-			HostTemplate: hostTemplate,
-		}
-	default:
-		fmt.Printf("Unknown event type '%s'.", event.Type)
-	}
-	return nil
 }
 
 const helpText = `Usage: deployer-tools [options]

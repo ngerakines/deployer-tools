@@ -36,6 +36,58 @@ func BuildHostTemplate(hostTemplate, cluster string) (string, error) {
 	return s, nil
 }
 
+type CommandOption func(*CommandOptions)
+
+type CommandOptions struct {
+	Dry          bool
+	Mapping      Mapping
+	Event        *Event
+	HostTemplate string
+}
+
+func WithDry(dry bool) CommandOption {
+	return func(o *CommandOptions) {
+		o.Dry = dry
+	}
+}
+
+func WithMapping(m Mapping) CommandOption {
+	return func(o *CommandOptions) {
+		o.Mapping = m
+	}
+}
+
+func WithEvent(e *Event) CommandOption {
+	return func(o *CommandOptions) {
+		o.Event = e
+	}
+}
+
+func WithHostTemplate(h string) CommandOption {
+	return func(o *CommandOptions) {
+		o.HostTemplate = h
+	}
+}
+
+func NewCommand(opts ...CommandOption) Command {
+	options := CommandOptions{}
+	for _, o := range opts {
+		o(&options)
+	}
+	switch options.Event.Type {
+	case "service.update":
+		return &UpdateServiceCommand{
+			Dry:          options.Dry,
+			Mapping:      options.Mapping,
+			Event:        options.Event,
+			HostTemplate: options.HostTemplate,
+		}
+	default:
+		fmt.Printf("Unknown event type '%s'.", options.Event.Type)
+	}
+	return nil
+}
+
 func (c *UpdateServiceCommand) Run() error {
 	// mapping Mapping, event *Event, hostTemplate string
 	if c.Mapping == nil {
