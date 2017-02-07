@@ -67,18 +67,33 @@ func realMain(args []string) int {
 		return 1
 	}
 
-	switch event.Type {
-	case "service.update":
-		if err = ServiceUpdate(mapping, event, hostTemplate); err != nil {
-			fmt.Println(err)
-			return 1
-		}
-	default:
-		fmt.Printf("Unknown event type '%s'.", event.Type)
+	command := GetCommand(event.Type, dry, mapping, event, hostTemplate)
+	if command == nil {
+		return 1
+	}
+
+	err = command.Run()
+	if err != nil {
+		fmt.Println(err)
 		return 1
 	}
 
 	return 0
+}
+
+func GetCommand(eventType string, dry bool, mapping Mapping, event *Event, hostTemplate string) Command {
+	switch event.Type {
+	case "service.update":
+		return &UpdateServiceCommand{
+			Dry:          dry,
+			Mapping:      mapping,
+			Event:        event,
+			HostTemplate: hostTemplate,
+		}
+	default:
+		fmt.Printf("Unknown event type '%s'.", event.Type)
+	}
+	return nil
 }
 
 const helpText = `Usage: deployer-tools [options]

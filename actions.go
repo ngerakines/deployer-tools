@@ -7,6 +7,17 @@ import (
 	"text/template"
 )
 
+type Command interface {
+	Run() error
+}
+
+type UpdateServiceCommand struct {
+	Dry          bool
+	Mapping      Mapping
+	Event        *Event
+	HostTemplate string
+}
+
 type TemplateParams struct {
 	Cluster string
 }
@@ -25,33 +36,37 @@ func BuildHostTemplate(hostTemplate, cluster string) (string, error) {
 	return s, nil
 }
 
-func ServiceUpdate(mapping Mapping, event *Event, hostTemplate string) error {
-	if mapping == nil {
+func (c *UpdateServiceCommand) Run() error {
+	// mapping Mapping, event *Event, hostTemplate string
+	if c.Mapping == nil {
 		return errors.New("Invalid mapping")
 	}
-	if event == nil {
+	if c.Event == nil {
 		return errors.New("Invalid event")
 	}
 
-	projectMapping, hasProjectMapping := mapping[event.Project]
-	if !hasProjectMapping {
-		return nil
-		// return errors.New("No project mapping for event.")
+	var prefix string
+	if c.Dry == true {
+		prefix = "# "
 	}
 
-	branchMapping, hasBranchMapping := projectMapping[event.Branch]
+	projectMapping, hasProjectMapping := c.Mapping[c.Event.Project]
+	if !hasProjectMapping {
+		return nil
+	}
+
+	branchMapping, hasBranchMapping := projectMapping[c.Event.Branch]
 	if !hasBranchMapping {
 		return nil
-		// return errors.New("No branch mapping for event.")
 	}
 
 	for cluster, services := range branchMapping {
-		host, err := BuildHostTemplate(hostTemplate, cluster)
+		host, err := BuildHostTemplate(c.HostTemplate, cluster)
 		if err != nil {
 			return err
 		}
 		for _, service := range services {
-			fmt.Println("docker -H", host, "service update --image", event.Container, service)
+			fmt.Printf("%sdocker -H %s service update --image %s %s\n", prefix, host, c.Event.Container, service)
 		}
 	}
 
