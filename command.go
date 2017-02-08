@@ -12,6 +12,7 @@ type CommandOption func(*CommandOptions)
 
 type CommandOptions struct {
 	Dry          bool
+	WithAuth     bool
 	Mapping      Mapping
 	Event        *Event
 	HostTemplate string
@@ -35,6 +36,12 @@ func WithEvent(e *Event) CommandOption {
 	}
 }
 
+func WithAuth(b bool) CommandOption {
+	return func(o *CommandOptions) {
+		o.WithAuth = b
+	}
+}
+
 func WithHostTemplate(h string) CommandOption {
 	return func(o *CommandOptions) {
 		o.HostTemplate = h
@@ -53,6 +60,7 @@ func NewCommand(opts ...CommandOption) Command {
 			Mapping:      options.Mapping,
 			Event:        options.Event,
 			HostTemplate: options.HostTemplate,
+			WithAuth:     options.WithAuth,
 		}
 	default:
 		fmt.Printf("Unknown event type '%s'.", options.Event.Type)

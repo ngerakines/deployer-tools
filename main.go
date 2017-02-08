@@ -15,6 +15,7 @@ func realMain(args []string) int {
 
 	var dry bool
 	var test bool
+	var withAuth bool
 	var mappingFile string
 	var eventFile string
 	var hostTemplate string
@@ -25,6 +26,7 @@ func realMain(args []string) int {
 		flags.PrintDefaults()
 	}
 
+	flags.BoolVar(&withAuth, "with-auth", false, "Uses the --with-registry-auth flag.")
 	flags.BoolVar(&dry, "dry", false, "Prefixes all output with '#' characters.")
 	flags.BoolVar(&test, "test", false, "Use to test scripts.")
 	flags.StringVar(&mappingFile, "mapping", "", "The location of the mapping file.")
@@ -72,6 +74,7 @@ func realMain(args []string) int {
 		WithDry(dry),
 		WithEvent(event),
 		WithHostTemplate(hostTemplate),
+		WithAuth(withAuth),
 	)
 	if command == nil {
 		return 1

@@ -10,6 +10,7 @@ type UpdateServiceCommand struct {
 	Mapping      Mapping
 	Event        *Event
 	HostTemplate string
+	WithAuth     bool
 }
 
 func (c *UpdateServiceCommand) Run() error {
@@ -36,13 +37,18 @@ func (c *UpdateServiceCommand) Run() error {
 		return nil
 	}
 
+	authInclude := ""
+	if c.WithAuth == true {
+		authInclude = "--with-registry-auth "
+	}
+
 	for cluster, services := range branchMapping {
 		host, err := BuildHostTemplate(c.HostTemplate, cluster)
 		if err != nil {
 			return err
 		}
 		for _, service := range services {
-			fmt.Printf("%sdocker -H %s service update --image %s %s\n", prefix, host, c.Event.Container, service)
+			fmt.Printf("%sdocker -H %s service update %s--image %s %s\n", prefix, host, authInclude, c.Event.Container, service)
 		}
 	}
 
